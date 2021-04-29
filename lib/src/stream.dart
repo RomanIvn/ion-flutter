@@ -34,7 +34,7 @@ class Stream extends EventEmitter {
             "minHeight": resolutions[quality]['height'],
             "minFrameRate": '30',
           },
-          "facingMode": 'user',
+          "facingMode": 'environment',
         };
         Map<String, dynamic> audioConstrains = {
             "echoCancellation": true,
