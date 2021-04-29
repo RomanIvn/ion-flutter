@@ -17,16 +17,10 @@ class Stream extends EventEmitter {
   MediaStream _stream;
   Stream([this._mid, this._stream]);
 
-  init(
-      [sender = false,
-      audio = true,
-      video = true,
-      screen = false,
-      quality = 'hd']) async {
+  init([sender = false, audio = true, video = true, screen = false, quality = 'hd']) async {
     if (sender) {
       if (screen) {
-        this._stream = await navigator
-            .getDisplayMedia(_buildMediaConstraints(false, true));
+        this._stream = await navigator.getDisplayMedia(_buildMediaConstraints(false, true));
       } else {
         Map<String, dynamic> videoConstrains = {
           "mandatory": {
@@ -37,11 +31,10 @@ class Stream extends EventEmitter {
           "facingMode": 'user',
         };
         Map<String, dynamic> audioConstrains = {
-            "echoCancellation": true,
-            "noiseSuppression": true,
+          "echoCancellation": true,
+          "noiseSuppression": true,
         };
-        this._stream = await navigator
-            .getUserMedia(_buildMediaConstraints(audioConstrains, videoConstrains));
+        this._stream = await navigator.getUserMedia(_buildMediaConstraints(audioConstrains, videoConstrains));
       }
     }
   }
