@@ -84,7 +84,9 @@ class Client extends EventEmitter {
     this._rid = roomId;
     info = info ?? {'name': 'Guest'};
     try {
-      var data = await this._protoo.send('join', {'rid': this._rid, 'uid': this._uid, 'info': info});
+      var data = await this
+          ._protoo
+          .send('join', {'rid': this._rid, 'uid': this._uid, 'info': info});
       logger.debug('join success: result => ' + _encoder.convert(data));
       return data;
     } catch (error) {
@@ -94,7 +96,9 @@ class Client extends EventEmitter {
 
   Future<dynamic> leave() async {
     try {
-      var data = await this._protoo.send('leave', {'rid': this._rid, 'uid': this._uid});
+      var data = await this
+          ._protoo
+          .send('leave', {'rid': this._rid, 'uid': this._uid});
       logger.debug('leave success: result => ' + _encoder.convert(data));
       return data;
     } catch (error) {
@@ -102,7 +106,13 @@ class Client extends EventEmitter {
     }
   }
 
-  Future<Stream> publish([audio = true, video = true, screen = false, codec = 'vp8', bandwidth = 512, resolution = 'hd']) async {
+  Future<Stream> publish(
+      [audio = true,
+      video = true,
+      screen = false,
+      codec = 'vp8',
+      bandwidth = 512,
+      resolution = 'hd']) async {
     logger.debug('publish');
     Completer completer = new Completer<Stream>();
     RTCPeerConnection pc;
@@ -126,8 +136,10 @@ class Client extends EventEmitter {
             'bandwidth': int.parse(bandwidth),
             'resolution': resolution,
           };
-          var result = await this._protoo.send('publish', {'rid': this._rid, 'uid': this._uid, 'jsep': offer.toMap(), 'options': options});
-          await pc.setRemoteDescription(RTCSessionDescription(result['jsep']['sdp'], result['jsep']['type']));
+          var result = await this._protoo.send('publish',
+              {'rid': this._rid, 'uid': this._uid, 'jsep': offer.toMap(), 'options': options});
+          await pc.setRemoteDescription(RTCSessionDescription(
+              result['jsep']['sdp'], result['jsep']['type']));
           logger.debug('publish success => ' + _encoder.convert(result));
           stream.mid = result['mid'];
           this._pcs[stream.mid] = pc;
@@ -157,7 +169,8 @@ class Client extends EventEmitter {
     logger.debug('unpublish rid => ${this._rid}, mid => $mid');
     this._removePC(mid);
     try {
-      var data = await this._protoo.send('unpublish', {'rid': this._rid, 'uid': this._uid, 'mid': mid});
+      var data =
+          await this._protoo.send('unpublish', {'rid': this._rid, 'uid': this._uid, 'mid': mid});
       logger.debug('unpublish success: result => ' + _encoder.convert(data));
       return data;
     } catch (error) {
@@ -165,25 +178,28 @@ class Client extends EventEmitter {
     }
   }
 
-  Future<Stream> subscribe(rid, mid, tracks, [String bandwidth = '512']) async {
+  Future<Stream> subscribe(rid, mid,
+      tracks, [String bandwidth = '512']) async {
     logger.debug('subscribe rid => $rid, mid => $mid,  tracks => ${tracks.toString()}');
     Completer completer = new Completer<Stream>();
     var codec = "";
-    tracks?.forEach((trackID, trackInfoArr) async {
-      logger.debug('trackInfoArr=$trackInfoArr');
+    tracks?.forEach((trackID,trackInfoArr) async {
+        logger.debug('trackInfoArr=$trackInfoArr');
 
-      for (var i = 0; i < trackInfoArr.length; i++) {
-        var trackInfo = trackInfoArr[i];
-        logger.debug('trackInfo=$trackInfo');
-        var type = trackInfo['type'];
-        logger.debug('type=$type');
-        if (type == "video") {
-          codec = trackInfo['codec'];
-          logger.debug('codec=$codec');
+        for(var i=0; i<trackInfoArr.length; i++){
+          var trackInfo=trackInfoArr[i];
+          logger.debug('trackInfo=$trackInfo');
+          var type = trackInfo['type'];
+          logger.debug('type=$type');
+          if (type == "video") {
+            codec = trackInfo['codec'];
+            logger.debug('codec=$codec');
+          }
         }
       }
-    });
+    );
 
+     
     var options = {
       'codec': codec,
       'bandwidth': int.parse(bandwidth),
@@ -205,10 +221,18 @@ class Client extends EventEmitter {
           sendOffer = true;
           RTCSessionDescription jsep = await pc.getLocalDescription();
           logger.debug('Send offer sdp => ' + jsep.sdp);
-          var result = await this._protoo.send('subscribe', {'rid': rid, 'uid': this._uid, 'mid': mid, 'jsep': jsep.toMap(), 'options': options});
+          var result = await this._protoo.send('subscribe', {
+            'rid': rid,
+            'uid': this._uid,
+            'mid': mid,
+            'jsep': jsep.toMap(),
+            'options': options
+          });
           sub_mid = result['mid'];
-          logger.debug('subscribe success => result(mid => $sub_mid) sdp => ' + result['jsep']['sdp']);
-          await pc.setRemoteDescription(RTCSessionDescription(result['jsep']['sdp'], result['jsep']['type']));
+          logger.debug('subscribe success => result(mid => $sub_mid) sdp => ' +
+              result['jsep']['sdp']);
+          await pc.setRemoteDescription(RTCSessionDescription(
+              result['jsep']['sdp'], result['jsep']['type']));
         }
       };
 
@@ -236,7 +260,8 @@ class Client extends EventEmitter {
   Future<dynamic> unsubscribe(rid, mid) async {
     logger.debug('unsubscribe rid => $rid, mid => $mid');
     try {
-      var data = await this._protoo.send('unsubscribe', {'rid': rid, 'mid': mid});
+      var data =
+          await this._protoo.send('unsubscribe', {'rid': rid, 'mid': mid});
       logger.debug('unsubscribe success: result => ' + _encoder.convert(data));
       this._removePC(mid);
       return data;
@@ -248,7 +273,9 @@ class Client extends EventEmitter {
 
   Future<dynamic> broadcast(rid, info) async {
     try {
-      var data = await this._protoo.send('broadcast', {'rid': this._rid, 'uid': this._uid, 'info': info});
+      var data = await this
+          ._protoo
+          .send('broadcast', {'rid': this._rid, 'uid': this._uid, 'info': info});
       logger.debug('broadcast success: result => ' + _encoder.convert(data));
       return data;
     } catch (error) {
@@ -312,7 +339,12 @@ class Client extends EventEmitter {
       logger.debug('Setup video codec => $codeName, payload => $payload');
 
       var rtp = [
-        {"payload": payload, "codec": codeName, "rate": 90000, "encoding": null},
+        {
+          "payload": payload,
+          "codec": codeName,
+          "rate": 90000,
+          "encoding": null
+        },
         //{"payload": rtx, "codec": "rtx", "rate": 90000, "encoding": null}
       ];
 
@@ -321,7 +353,11 @@ class Client extends EventEmitter {
       ];
 
       if (payload == DefaultPayloadTypeH264) {
-        fmtp.add({"payload": payload, "config": "level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f"});
+        fmtp.add({
+          "payload": payload,
+          "config":
+              "level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f"
+        });
       }
 
       var rtcpFB = [
@@ -431,20 +467,23 @@ class Client extends EventEmitter {
   }
 
   _handleRequest(request, accept, reject) {
-    logger.debug('Handle request from server: [method:${request['method']}, data:${request['data']}]');
+    logger.debug(
+        'Handle request from server: [method:${request['method']}, data:${request['data']}]');
   }
 
   _handleNotification(notification) {
     var method = notification['method'];
     var data = notification['data'];
-    logger.debug('Handle notification from server: [method:$method, data:$data]');
+    logger
+        .debug('Handle notification from server: [method:$method, data:$data]');
     switch (method) {
       case 'peer-join':
         {
           var rid = data['rid'];
           var uid = data['uid'];
           var info = data['info'];
-          logger.debug('peer-join peer rid => $rid, uid => $uid, info => ${info.toString()}');
+          logger.debug(
+              'peer-join peer rid => $rid, uid => $uid, info => ${info.toString()}');
           this.emit('peer-join', rid, uid, info);
           break;
         }
@@ -462,7 +501,8 @@ class Client extends EventEmitter {
           var mid = data['mid'];
           var info = data['info'];
           var tracks = data['tracks'];
-          logger.debug('stream-add peer rid => $rid, mid => $mid, info => ${info.toString()},  tracks => $tracks');
+          logger.debug(
+              'stream-add peer rid => $rid, mid => $mid, info => ${info.toString()},  tracks => $tracks');
           this.emit('stream-add', rid, mid, info, tracks);
           break;
         }
@@ -475,12 +515,13 @@ class Client extends EventEmitter {
           this._removePC(mid);
           break;
         }
-      case 'broadcast':
+     case 'broadcast':
         {
           var rid = data['rid'];
           var uid = data['uid'];
           var info = data['info'];
-          logger.debug('broadcast peer rid => $rid, uid => $uid, info => ${info.toString()}');
+          logger.debug(
+              'broadcast peer rid => $rid, uid => $uid, info => ${info.toString()}');
           this.emit('broadcast', rid, uid, info);
           break;
         }
